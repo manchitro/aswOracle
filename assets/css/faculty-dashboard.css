@@ -1,0 +1,868 @@
+*{
+	margin: 0px;
+	padding: 0px;
+	box-sizing: border-box;
+}
+
+html{
+	scroll-behavior: smooth;
+}
+
+body{
+	background-color: rgb(48,48,48);
+	font-family: sans-serif;
+	overflow: hidden;
+}
+
+header{
+	height: 8vh;
+	background-color: rgb(59,59,59);
+}
+
+.title{
+	background-color: rgb(64,189,248);
+	width: 20vw;
+	min-width: 250px;
+	font-weight: bold;
+	text-align: center;
+	height: 8vh;
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	color: rgb(59,59,59);
+	float: left;
+	overflow: hidden;
+}
+
+.title h4{
+	margin: 0 10px;
+	font-size: 130%;
+	font-family: sans-serif;
+}
+
+.welcome{
+	width: auto;
+	height: 8vh;
+	color: rgb(217,217,217);
+	text-align: right;
+	overflow: hidden;
+	font-size: 120%;
+	display: flex;
+	align-items: center;
+	float: right;
+}
+
+.message{
+	font-size: 80%;
+	padding-right: 100px;
+	font-style: italic;
+}
+
+.welcome p{
+	margin-right: 10px;
+}
+
+.welcome img{
+	width: 30px;
+	float: right;
+	margin-right: 30px;
+}
+
+.main{
+	display: inline-flex;
+}
+
+.left-panel{
+	width: 20vw;
+	min-width: 250px;
+	background-color: rgb(59,59,59);
+}
+
+.today-title{
+	width: 20vw;
+	min-width: 250px;
+	background-color: rgb(59,59,59);
+	border-top: 1px rgb(217,217,217) solid;
+	border-bottom: 1px rgb(217,217,217) solid;
+	height: 6vh;
+	text-align: center;
+	display: flex;
+	align-items: center;
+	color: rgb(217,217,217);
+	font-size: 110%;
+	padding-left: 15px;
+}
+
+.todays-classes{
+	height: 30vh;
+	width: 20vw;
+	min-width: 250px;
+	background-color: rgb(31,31,31);
+	color: rgb(217,217,217);
+	overflow-y: auto;
+}
+
+.todays-classes img{
+	height: 30px;
+
+}
+
+.qr-td{
+	text-align: right;
+}
+
+.no-class{
+	margin-left: 15px;
+	margin-top: 10px;
+}
+
+.today-class-box{
+	background-color: rgb(38,38,38);
+	padding-top: 10px;
+	padding-left: 10px;
+	font-size: 90%;
+}
+
+.today-class-table{
+	width: 100%;
+}
+
+.today-class-table{
+	padding-right: 10px;
+}
+
+.today-class-box-even{
+	background-color: rgb(59,59,59);
+	padding-top: 10px;
+	padding-left: 10px;
+	font-size: 90%;
+}
+
+.qr-button{
+	margin: 0;
+	padding: 0;
+	background-color: transparent;
+	border: none;
+	cursor: pointer;
+}
+
+.class-room{
+	padding-left: 10px;
+	text-align: right;
+}
+
+nav{
+	width: 20vw;
+	min-width: 250px;
+	height: 56vh;
+}
+
+.nav-bars{
+	height: 8vh;
+	width: 20vw;
+	min-width: 250px;
+	background-color: rgb(59,59,59);
+	border-bottom: 0.5px solid rgb(112,112,112);
+	display: flex;
+	float: left;
+	align-items: center;
+}
+
+.nav-bars a{
+	text-decoration: none;
+	color: rgb(217,217,217);
+	font-size: 120%;
+	margin-left: 20px;
+}
+
+
+.nav-bars img{
+	height: 30px;
+	margin-left: 20px;
+}
+
+.nav-bars a:hover{
+	color: rgb(64,189,248);
+}
+
+nav #active{
+	background-color: rgb(48,48,48);
+}
+
+nav #active a:hover{
+	color: rgb(217,217,217);
+	cursor: pointer;
+}
+
+.right-panel{
+	width: 80vw;
+	color: rgb(217,217,217);
+	display: inline-block;
+}
+
+.page-title{
+	width: 100%;
+	border-top: 1px rgb(217,217,217) solid;
+	border-bottom: 2px rgb(64,189,248) solid;
+	display: flex;
+	align-items: center;
+	float: right;
+}
+
+.page-title p{
+	color: rgb(217,217,217);
+	margin: 20px 40px;
+	font-size: 150%;
+	width: 80%;
+}
+
+.addsection-button{
+	height: 40px;
+	width: 150px;
+	font-size: 90%;
+	padding: 7px 10px;
+	color: rgb(217,217,217);
+	font-family: Arial, sans-serif;
+	background-color: rgb(48,48,48);
+	border: rgb(64,189,248) 2px solid;
+	cursor: pointer;
+	margin-right: 20px;
+}
+
+.back-button{
+	background-color: rgb(48,48,48);
+	border: 1px rgb(48,48,48) solid;
+	cursor: pointer;
+	margin-left: 20px;
+}
+
+.back-button:hover{
+	background-color: rgb(48,48,48);
+}
+
+.back-button img{
+	width: 30px;
+	cursor: hand;
+}
+
+.back-button img:hover{
+	background-color: rgb(48,48,48);
+}
+
+.addsection-button:hover{
+	background-color: rgb(69,69,69);
+}
+
+.addsection-button:active{
+	background-color: rgb(36,36,36);
+}
+
+.main-container{
+	overflow-y: auto;
+	width: 100%;
+	height: 82vh;
+	padding-left: 30px;
+	padding-top: 20px;
+	padding-bottom: 20px;
+}
+
+.main-container-table{
+	overflow-y: auto;
+	width: 100%;
+	height: 82vh;
+}
+
+.main-container-table p{
+	margin: 20px;
+}
+
+.section-box{
+	border: 1px rgb(64,189,248) solid;
+	width: 350px;
+	height: 160px;
+	float: left;
+	padding: 20px;
+	margin: 10px 30px 10px 10px;
+}
+
+.section-box input{
+	padding: 5px;
+	background-color: rgb(48,48,48);
+	border: 1px rgb(64,189,248) solid;
+	color: rgb(217,217,217);
+	cursor: pointer;
+	margin-top: 15px;
+	margin-right: 10px;
+	width: 96px;
+	height: 40px;
+	font-size: 100%;
+}
+
+.section-box button:hover{
+	background-color: rgb(69,69,69);
+}
+
+.students{
+	margin-right: 15px;
+}
+
+.sec-name{
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.sec-name:hover {
+	text-overflow: clip;
+	white-space: normal;
+	word-break: break-all;
+}
+
+.sec-times{
+	font-style: italic;
+	font-size: 80%;
+	margin-top: 10px;
+	line-height: 150%;
+}
+
+.section-menu{
+	display: inline-flex;
+}
+
+.section-menu input:hover{
+	background-color: rgb(69,69,69);
+}
+
+.section-menu input:active{
+	background-color: rgb(36,36,36);
+}
+
+.class-box{
+	border: 1px rgb(64,189,248) solid;
+	width: 350px;
+	height: 160px;
+	float: left;
+	padding: 20px;
+	margin: 10px 30px 10px 10px;
+}
+
+.class-box input{
+	padding: 5px;
+	background-color: rgb(48,48,48);
+	border: 1px rgb(64,189,248) solid;
+	color: rgb(217,217,217);
+	cursor: pointer;
+	margin-top: 15px;
+	margin-right: 10px;
+	width: 150px;
+	height: 40px;
+	font-size: 120%;
+}
+
+.class-box button:hover{
+	background-color: rgb(69,69,69);
+}
+
+.students{
+	margin-right: 15px;
+}
+
+.class-name{
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.class-name:hover {
+	text-overflow: clip;
+	white-space: normal;
+	word-break: break-all;
+}
+
+.class-times{
+	font-style: italic;
+	font-size: 80%;
+	margin-top: 10px;
+	line-height: 150%;
+}
+
+.class-menu{
+	display: inline-flex;
+}
+
+.class-menu input:hover{
+	background-color: rgb(69,69,69);
+}
+
+.class-menu input:active{
+	background-color: rgb(36,36,36);
+}
+
+.section-name-div{
+	font-size: 120%;
+	margin: 20px 20px;
+	padding-left: 20px;
+	border-left: 1px rgb(217,217,217) solid;
+	width: 90%;
+	white-space: nowrap;
+}
+
+.section-name-div input{
+	padding: 5px 10px;
+	font-size: 100%;
+	background-color: rgb(38,38,38);
+	border: 0px solid;
+	margin-left: 20px;
+	margin-right: 10px;
+	width: 80%;
+	color: rgb(217,217,217);
+}
+
+.section-time{
+	font-size: 100%;
+	margin: 30px 20px;
+	padding-left: 20px;
+	border-left: 1px rgb(217,217,217) solid;
+	width: 90%;
+}
+
+.section-time p{
+	margin-bottom: 10px;
+	font-size: 120%;
+}
+
+.section-time select{
+	padding: 5px;
+	background-color: rgb(38,38,38);
+	color: rgb(217,217,217);
+	font-size: 100%;
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+.section-time input{
+	padding: 5px 10px;
+	font-size: 100%;
+	background-color: rgb(38,38,38);
+	border: 0px solid;
+	margin: 10px 5px 0 5px;	
+	color: rgb(217,217,217);
+}
+
+.one-class{
+	font-size: 100%;
+	margin: 30px 20px;
+	padding-left: 20px;
+	border-left: 1px rgb(217,217,217) solid;
+	width: 90%;
+}
+
+.one-class input{
+	width: 20px;
+}
+
+.buttons{
+	margin: 30px 20px;
+	padding-left: 20px;
+	border-left: 1px rgb(217,217,217) solid;
+	width: 90%;
+}
+
+.buttons input{
+	padding: 5px 10px;
+	background-color: rgb(48,48,48);
+	border: 1px solid rgb(64,189,243);
+	color: rgb(64,189,243);
+	width: 80px;
+	height: 30px;
+	font-size: 100%;
+	margin-right: 10px;
+	cursor: pointer;
+}
+
+.buttons input:hover{
+	background-color: rgb(64,189,243);
+	border: 0px solid;
+	color: rgb(48,48,48);
+}
+
+.button-delete{
+	margin: 30px 20px;
+	padding-left: 20px;
+	border-left: 1px rgb(217,217,217) solid;
+	width: 90%;
+}
+
+.button-delete input{
+	padding: 5px 10px;
+	background-color: rgb(48,48,48);
+	border: 1px solid rgb(243, 64, 64);
+	color: rgb(243, 64, 64);
+	width: 80px;
+	height: 30px;
+	font-size: 100%;
+	margin-right: 10px;
+	cursor: pointer;
+}
+
+.button-delete input:hover{
+	background-color: rgb(243, 64, 64);
+	border: 1px solid rgb(243, 64, 64);
+	color: rgb(48,48,48);
+}
+
+.error1 p{
+	color: red;
+	font-size: 100%;
+}
+
+.add-single-student-title{
+	font-size: 120%;
+	margin: 20px 10px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid rgb(217,217,217);
+	width: 90%;
+	white-space: nowrap;
+}
+
+.add-single-student-fields label{
+	font-size: 100%;
+	margin-top: 20px;
+	margin-left: 30px;
+	width: auto;
+}
+
+.add-single-student-fields input{
+	padding: 5px 10px;
+	font-size: 100%;
+	background-color: rgb(38,38,38);
+	border: 0px solid;
+	margin-left: 20px;
+	margin-right: 10px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	width: 30vw;
+	color: rgb(217,217,217);
+	text-transform: uppercase;
+}
+
+.add-single-student-button input{
+	padding: 5px 10px;
+	background-color: rgb(64,189,243);
+	border: 0px solid;
+	color: rgb(48,48,48);
+	width: 80px;
+	height: 30px;
+	font-size: 100%;
+	margin-top: 20px;
+	margin-right: 10px;
+	margin-left: 30px;
+	cursor: pointer;
+}
+
+.add-single-student-button input:hover{
+	background-color: rgb(146, 221, 252);
+}
+
+.or-divider p{
+	font-size: 120%;
+	margin: 20px 10px;
+	font-style: italic;
+}
+
+.import-spreadsheet-title{
+	font-size: 120%;
+	margin: 20px 10px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid rgb(217,217,217);
+	width: 90%;
+	white-space: nowrap;
+}
+
+.import-spreadsheet-main{
+	margin-left: 25px;
+	margin-right: 10px;
+	margin-top: 10px;
+}
+
+.import-spreadsheet-main p{
+	margin-bottom: 10px;
+}
+
+.import-spreadsheet-main input{
+	padding: 5px 10px;
+	background-color: rgb(64,189,243);
+	border: 0px solid;
+	color: rgb(48,48,48);
+	text-decoration: none;
+	width: 80px;
+	height: 30px;
+	font-size: 100%;
+	cursor: pointer;
+}
+
+.import-spreadsheet-main input:hover{
+	background-color: rgb(146, 221, 252);
+}
+
+.student-table{
+	border-collapse: collapse;
+	font-size: 95%;
+	text-align: left;
+	cursor: default;
+}
+
+.att{
+	cursor: auto;
+}
+
+.student-table th{
+	font-weight: normal;
+	background-color: rgb(230,230,230);
+	padding: 5px 10px 5px 10px;
+	color: rgb(48,48,48);
+}
+
+.student-table tr:hover{
+	background-color: rgb(89,89,89) !important;
+}
+
+.student-table tr:nth-child(even) {
+	background-color: rgb(60,60,60);
+}
+
+.student-table td{
+	padding: 7px 10px 7px 10px;
+	font-size: 95%;
+}
+
+.student-table td:nth-child(1){
+	width: auto;
+}
+
+.student-table td:nth-child(2){
+	width: 120px;
+}
+
+.student-table td:nth-child(3){
+	width: 300px;
+}
+
+.student-table td:nth-child(n+4){
+	text-align: right;
+	border-left: 1px solid rgb(150,150,150);
+}
+
+.student-table input[type="checkbox"]{
+	-ms-transform: scale(1.5); /* IE */
+	-moz-transform: scale(1.5); /* FF */
+	-webkit-transform: scale(1.5); /* Safari and Chrome */
+	-o-transform: scale(1.5); /* Opera */
+	align-self: center;
+}
+
+.student-remove-form input[type="submit"]{
+	padding: 5px 10px;
+	background-color: rgb(48,48,48);
+	border: 1px solid rgb(243, 64, 64);
+	color: rgb(243, 64, 64);
+	width: auto;
+	height: 30px;
+	font-size: 100%;
+	margin-top: 20px;
+	margin-right: 10px;
+	margin-left: 20px;
+	cursor: pointer;
+}
+
+.class-info{
+	font-size: 100%;
+	margin: 30px 20px;
+	padding-left: 20px;
+	border-left: 1px rgb(217,217,217) solid;
+	width: 90%;
+}
+
+.class-info p{
+	margin-bottom: 10px;
+	font-size: 120%;
+}
+
+.class-info select{
+	padding: 5px;
+	background-color: rgb(38,38,38);
+	color: rgb(217,217,217);
+	font-size: 100%;
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+.class-info input{
+	padding: 5px 10px;
+	font-size: 100%;
+	background-color: rgb(38,38,38);
+	border: 0px solid;
+	margin: 10px 5px 10px 5px;
+	color: rgb(217,217,217);
+}
+
+.date-selector p{
+	display: inline-block;
+}
+
+.date-selector input[type="date"]{
+	display: inline-block;
+}
+
+.profile-form{
+	padding-left: 10px;
+}
+
+.profile-table td{
+	height: 40px;
+	font-size: 110%;
+}
+
+.profile-form input[type="text"], input[type="email"]{
+	height: 30px;
+	width: 300px;
+	background-color: rgb(39,39,39);
+	border: none;
+	color: rgb(217,217,217);
+	font-size: 95%;
+	padding-left: 10px;
+	margin-left: 20px;
+}
+
+.pass-change-form{
+	padding-left: 10px;
+}
+
+.pass-table td{
+	height: 40px;
+	font-size: 110%;
+}
+
+.value p{
+	padding-left: 10px;
+	margin-left: 20px;
+}
+
+.key{
+	width: 150px;
+}
+
+.value{
+	width: 300px;
+}
+
+.submit-button{
+	text-align: right;
+}
+
+.submit-button input{
+	padding: 5px 10px;
+	background-color: rgb(48,48,48);
+	border: 1px solid rgb(64,189,243);
+	color: rgb(64,189,243);
+	width: 80px;
+	height: 30px;
+	font-size: 90%;
+	margin-right: 1px;
+	cursor: pointer;
+}
+
+.submit-button input:hover{
+	background-color: rgb(64,189,243);
+	border: 0px solid;
+	color: rgb(48,48,48);
+}
+
+.pass-table input{
+	padding: 5px 10px;
+	background-color: rgb(48,48,48);
+	border: 1px solid rgb(64,189,243);
+	color: rgb(64,189,243);
+	width: 80px;
+	height: 30px;
+	font-size: 90%;
+	margin-right: 1px;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+.pass-change-form input[type="password"]{
+	height: 30px;
+	width: 300px;
+	background-color: rgb(39,39,39);
+	border: none;
+	color: rgb(217,217,217);
+	font-size: 95%;
+	padding-left: 10px;
+	margin-left: 20px;
+}
+
+.pass-change-title{
+	margin: 20px 10px;
+	font-size: 120%;
+	border-bottom: 1px solid rgb(217,217,217);
+	padding-bottom: 10px;
+	width: 470px;
+}
+
+.change-pass-link a{
+	padding: 5px 10px;
+	background-color: rgb(48,48,48);
+	border: 1px solid rgb(64,189,243);
+	color: rgb(64,189,243);
+	width: 80px;
+	height: 30px;
+	font-size: 100%;
+	margin-right: 1px;
+	margin-top: 30px;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+#searchBox{
+	font-size: 130%;
+	margin: 15px 20px;
+	height: 40px;
+	width: 50vw;
+	background-color: rgb(39,39,39);
+	border: none;
+	color: rgb(217,217,217);
+	padding-left: 20px;
+}
+
+.search-button{
+	background-color: rgb(48,48,48);
+	border: none;
+	cursor: pointer;
+	text-align: right;
+	margin-right: 10px;
+}
+
+.search-button img{
+	height: 30px;
+}
+
+#qrcode{
+	display: none;
+	position: fixed;
+	height: 100vh;
+	width: 100vw;
+	top: 0;
+	left: 0;
+	color: black;
+	background-color: #fff;
+	text-align: center;
+}
+
+#qrcode img{
+	height: 100vh;
+	padding: 40px;
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+}
