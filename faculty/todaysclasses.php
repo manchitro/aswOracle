@@ -4,42 +4,42 @@
 </div>
 <div class="todays-classes">
 	<?php
-	require '../../includes/dbh.inc.php';
+	require '../../includes/oracleConn.php';
 	include 'values.php';
 
-	$sql = "SELECT * FROM classes WHERE sectionId IN (SELECT Id from sections where facultyId = ?) AND ClassDate = ?;";
-	$stmt = mysqli_stmt_init($conn);
-	if (!mysqli_stmt_prepare($stmt, $sql)) {
+	$sql = "SELECT * FROM classes WHERE sectionId IN (SELECT Id from sections where facultyId = :fid) AND ClassDate = :classDate";
+	$stmt = oci_parse($conn, $sql);
+	if (!$stmt) {
 		echo '<p class="error-msg">Error retrieving data</p>';
 	}
 	else{
-		$today = date("Y-m-d");
-		mysqli_stmt_bind_param($stmt, "ss", $_SESSION['userId'], $today);
-		mysqli_stmt_execute($stmt);
-		mysqli_stmt_store_result($stmt);
-		mysqli_stmt_bind_result($stmt, $classId, $classSectionId, $classDate, $classType, $classStartTimeId, $classEndTimeId, $classRoomNo, $classQRCode, $classQRDisplayStartTime, $classQRDisplayEndTime, $classCreatedAt);
-		if(mysqli_stmt_num_rows($stmt) == 0){
+		$today = date("d-m-Y");
+		oci_bind_by_name($stmt, ':fid', $_SESSION['userId']);
+		oci_bind_by_name($stmt, ':classDate', $today);
+		oci_execute($stmt);
+		$nrows = oci_fetch_all($stmt, $result, null, null, OCI_FETCHSTATEMENT_BY_ROW);
+		if($nrows == 0){
 			echo '<p class="no-class">No classes today</p>';
 		}
 		else{
 			$index = 1;
-			while (mysqli_stmt_fetch($stmt)){
-				$sql2 = "SELECT SectionName FROM sections WHERE Id = ?;";
-				$stmt2 = mysqli_stmt_init($conn);
-				if (!mysqli_stmt_prepare($stmt2, $sql2)) {
+			oci_execute($stmt);
+			while (($row = oci_fetch_array($stmt, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
+				$sql2 = "SELECT SectionName FROM sections WHERE Id = :sid";
+				$stmt2 = oci_parse($conn, $sql2);
+				if (!$stmt2) {
 					echo '<p class="error-msg">Error retrieving data</p>';
 				}
 				else{
-					mysqli_stmt_bind_param($stmt2, "s", $classSectionId);
-					mysqli_stmt_execute($stmt2);
-					mysqli_stmt_store_result($stmt2);
-					mysqli_stmt_bind_result($stmt2, $section_name);
+					oci_bind_by_name($stmt2, ':sid', $row['SECTIONID']);
+					oci_execute($stmt2);
+					$row2 = oci_fetch_array($stmt2, OCI_ASSOC);
 
-					if(mysqli_stmt_fetch($stmt2)){
+					if($row2){
 						if($index%2==0) echo '<div class="today-class-box">'; else echo '<div class="today-class-box-even">';
 						echo '<table class="today-class-table">';
-						echo '<tr><td><p class="section-name">'.$section_name.'</p></td><td><p class="class-room">at '.$classRoomNo.'</p></td></tr>';
-						echo '<tr><td><p class="class-time">'.$classtime[$classStartTimeId].' - '.$classtime[$classEndTimeId].' ['.$classtype[$classType].']'.'</p></td><td class=qr-td><button class="qr-button" id="'.$classId.'"><img src="../../images/qr.png"></button></td></tr>';
+						echo '<tr><td><p class="section-name">'.$row2['SECTIONNAME'].'</p></td><td><p class="class-room">at '.$row['ROOMNO'].'</p></td></tr>';
+						echo '<tr><td><p class="class-time">'.$classtime[$row['STARTTIMEID']].' - '.$classtime[$row['ENDTIMEID']].' ['.$classtype[$row['CLASSTYPE']].']'.'</p></td><td class=qr-td><button class="qr-button" id="'.$row['ID'].'"><img src="../../images/qr.png"></button></td></tr>';
 						echo '</table>';
 						echo '</div>';
 					}

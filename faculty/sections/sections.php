@@ -34,64 +34,66 @@ include '../values.php';
 			</div>
 			<div class="main-container">
 				<?php
-				require '../../includes/dbh.inc.php';
-				$sql = "SELECT * FROM sections WHERE FacultyId = ?;";
-				$stmt = mysqli_stmt_init($conn);
-				if(!mysqli_stmt_prepare($stmt, $sql)){
+				require '../../includes/oracleConn.php';
+				$sql = "SELECT * FROM sections WHERE FacultyId = :fid";
+				$stmt = oci_parse($conn, $sql);
+				if (!$stmt) {
+					$e = oci_error($conn);
+					trigger_error('Could not parse statement: '. $e['message'], E_USER_ERROR); 
 					echo '<p class="error-msg">Error retrieving your data</p>';
 				}
 				else{
-					mysqli_stmt_bind_param($stmt, "s", $_SESSION['userId']);
-					mysqli_stmt_execute($stmt);
-					mysqli_stmt_store_result($stmt);
-					mysqli_stmt_bind_result($stmt, $sectionId, $sectionName, $facultyId, $createdAt);
-					if(mysqli_stmt_num_rows($stmt) == 0){
+					oci_bind_by_name($stmt, ':fid', $_SESSION['userId']);
+					oci_execute($stmt);
+					$nrows = oci_fetch_all($stmt, $result, null, null, OCI_FETCHSTATEMENT_BY_ROW);
+					if($nrows == 0){
 						echo "<p>You have no sections as of now. Use the add section button to create a section.";
 					}
 					else{
-						while (mysqli_stmt_fetch($stmt)) {
+						oci_execute($stmt);
+						while (($row = oci_fetch_array($stmt, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
 							echo
 							'<div class="section-box">
-							<p class="sec-name">'.$sectionName.'</p>';
+							<p class="sec-name">'.$row['SECTIONNAME'].'</p>';
 
-							$sql2 = "SELECT * FROM sectionTimes WHERE sectionId = ?;";
-							$stmt2 = mysqli_stmt_init($conn);
-							if(!mysqli_stmt_prepare($stmt2, $sql2)){
-								echo '<p class="error-msg">Error retrieving your data - sectiontimes'.mysqli_error($conn).'</p>';
+							$sql2 = "SELECT * FROM sectionTimes WHERE sectionId = :sid";
+							$stmt2 = oci_parse($conn, $sql2);
+							if (!$stmt2) {
+								echo '<p class="error-msg">Error retrieving your data - sectiontimes'.oci_error($stmt).'</p>';
 							}
 							else{
-								mysqli_stmt_bind_param($stmt2, "s", $sectionId);
-								mysqli_stmt_execute($stmt2);
-								mysqli_stmt_store_result($stmt2);
-								mysqli_stmt_bind_result($stmt2, $sectionTimeId, $startTimeId, $endTimeId, $weekDayId, $classType, $room, $sectionId, $createdAt);
-								if(mysqli_stmt_num_rows($stmt2) == 0){
+								oci_bind_by_name($stmt2, ':sid', $row['ID']);
+								oci_execute($stmt2);
+								$nrows = oci_fetch_all($stmt2, $result, null, null, OCI_FETCHSTATEMENT_BY_ROW);
+								if($nrows == 0){
 									echo "<p>Error: No section time found</p>";
 								}
 								else{
 									echo '<div class="sec-times">';
-									while (mysqli_stmt_fetch($stmt2)) {
+									oci_execute($stmt2);
+									while (($row2 = oci_fetch_array($stmt2, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
 										echo 
-										'<p class="sec-time">'.$weekday[$weekDayId]." ".$classtime[$startTimeId]." - ".$classtime[$endTimeId]." [".$classtype[$classType]."] at ".$room.'</p>';
+										'<p class="sec-time">'.$weekday[$row2['WEEKDAYID']]." ".$classtime[$row2['STARTTIMEID']]." - ".$classtime[$row2['ENDTIMEID']]." [".$classtype[$row2['CLASSTYPE']]."] at ".$row2['ROOMNO'].'</p>';
 									}
-									if(mysqli_stmt_num_rows($stmt2) == 1){
+									if($nrows == 1){
 										echo '<p>2nd class of week not available/applicable</p>';
 									}
 									echo '</div>';
 								}
 								echo '<div class="section-menu">';
 								echo '<form method="post" action="students.php">';
-								echo '<input type="hidden" name="sectionId" value="'.$sectionId.'" />';
-								echo '<input type="hidden" name="sectionName" value="'.$sectionName.'" />';
+								echo '<input type="hidden" name="sectionId" value="'.$row['ID'].'" />';
+								echo '<input type="hidden" name="sectionName" value="'.$row['SECTIONNAME'].'" />';
 								echo '<input type="submit" class="students" value="Students">';
 								echo '</form>';
 								echo '<form method="post" action="classes.php">';
-								echo '<input type="hidden" name="sectionId" value="'.$sectionId.'" />';
-								echo '<input type="hidden" name="sectionName" value="'.$sectionName.'" />';
+								echo '<input type="hidden" name="sectionId" value="'.$row['ID'].'" />';
+								echo '<input type="hidden" name="sectionName" value="'.$row['SECTIONNAME'].'" />';
 								echo '<input type="submit" class="classes" value="Classes">';
 								echo '</form>';
 								echo '<form method="post" action="editsection.php">';
-								echo '<input type="hidden" name="sectionId" value="'.$sectionId.'" />';
-								echo '<input type="hidden" name="sectionName" value="'.$sectionName.'" />';
+								echo '<input type="hidden" name="sectionId" value="'.$row['ID'].'" />';
+								echo '<input type="hidden" name="sectionName" value="'.$row['SECTIONNAME'].'" />';
 								echo '<input type="submit" class="edit" value="Edit">';
 								echo '</form>';
 								echo '</div>';

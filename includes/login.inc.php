@@ -3,26 +3,24 @@ if(isset($_POST['login-submit']))
 {
 	$uid = $_POST['email'];
 	$password = $_POST['password'];
-
-
-
+	
 	//uid matches faculty
 	if (preg_match("/^\d{4}-\d{4}-[1-3]$/", $uid) || preg_match("/^[a-zA-Z0-9\.]+@aiub\.edu$/", $uid)) {
 		require 'oracleConn.php';
 		$sql ="SELECT * FROM users WHERE Email=:email OR AcademicId=:aid";
-		$stuser = oci_parse($conn, $sql);
+		$stmt = oci_parse($conn, $sql);
 
-		if (!$stuser) {
+		if (!$stmt) {
 			$e = oci_error($conn);
 			trigger_error('Could not parse statement: '. $e['message'], E_USER_ERROR); 
 			header("Location: ../login.php?error=sqlerror");
 			exit();
 		}
 		else{
-			oci_bind_by_name($stuser, ':email', $uid);
-			oci_bind_by_name($stuser, ':aid', $uid);
-			oci_execute($stuser);
-			$row = oci_fetch_array($stuser, OCI_ASSOC);
+			oci_bind_by_name($stmt, ':email', $uid);
+			oci_bind_by_name($stmt, ':aid', $uid);
+			oci_execute($stmt);
+			$row = oci_fetch_array($stmt, OCI_ASSOC);
 			if ($row) {
 				if ($row['PASSWORD'] != $password) {
 					header("Location: ../login.php?error=badcredp1");
@@ -112,18 +110,18 @@ if(isset($_POST['login-submit']))
 	elseif ($uid == 'admin') {
 		require 'oracleConn.php';
 		$sql ="SELECT * FROM users WHERE Email=:email";
-		$stuser = oci_parse($conn, $sql);
+		$stmt = oci_parse($conn, $sql);
 
-		if (!$stuser) {
+		if (!$stmt) {
 			$e = oci_error($conn);
 			trigger_error('Could not parse statement: '. $e['message'], E_USER_ERROR); 
 			header("Location: ../login.php?error=sqlerror");
 			exit();
 		}
 		else{
-			oci_bind_by_name($stuser, ':email', $uid);
-			oci_execute($stuser);
-			$row = oci_fetch_array($stuser, OCI_ASSOC);
+			oci_bind_by_name($stmt, ':email', $uid);
+			oci_execute($stmt);
+			$row = oci_fetch_array($stmt, OCI_ASSOC);
 			if ($row) {
 				if ($row['PASSWORD'] != $password) {
 					header("Location: ../login.php?error=badcredap1");

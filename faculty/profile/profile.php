@@ -32,27 +32,26 @@ else{
 					<form action="includes/edit-profile.inc.php" method="post">
 						<table class="profile-table">
 							<?php 
-							require '../../includes/dbh.inc.php';
-							$sql ="SELECT AcademicId, FirstName, LastName, Email FROM users WHERE Id=?";
-							$stmt = mysqli_stmt_init($conn);
+							require '../../includes/oracleConn.php';
+							$sql ="SELECT AcademicId, FirstName, LastName, Email FROM users WHERE Id=:id";
+							$stmt = oci_parse($conn, $sql);
 
-							if (!mysqli_stmt_prepare($stmt, $sql)) {
+							if (!$stmt) {
 								echo "Could not retrieve data";
 							}
 							else{
-								mysqli_stmt_bind_param($stmt, "s", $_SESSION['userId']);
-								mysqli_stmt_execute($stmt);
-								mysqli_stmt_store_result($stmt);
-								mysqli_stmt_bind_result($stmt, $user_academicId, $user_firstName, $user_lastName, $user_email);
-								if(mysqli_stmt_fetch($stmt)){
-									echo '<tr><td class="key">Academic Id: </td><td class="value"><p>'.$user_academicId.'</p></td></tr>';
-									echo '<tr><td class="key">First Name: </td><td class="value"><input type="text" name="firstName" value="'.$user_firstName.'"></td></tr>';
-									echo '<tr><td class="key">Last Name: </td><td class="value"><input type="text" name="lastName" value="'.$user_lastName.'"></td></tr>';
-									echo '<tr><td class="key">Email: </td><td class="value"><input type="email" name="email" title="Your email has to be 	on aiub.edu domain" pattern="^[a-zA-Z0-9]+@aiub\.edu$" value="'.$user_email.'"></td></tr>';
+								oci_bind_by_name($stmt, ':id', $_SESSION['userId']);
+								oci_execute($stmt);
+								$row = oci_fetch_array($stmt, OCI_ASSOC);
+								if($row){
+									echo '<tr><td class="key">Academic Id: </td><td class="value"><p>'.$row['ACADEMICID'].'</p></td></tr>';
+									echo '<tr><td class="key">First Name: </td><td class="value"><input type="text" name="firstName" value="'.$row['FIRSTNAME'].'"></td></tr>';
+									echo '<tr><td class="key">Last Name: </td><td class="value"><input type="text" name="lastName" value="'.$row['LASTNAME'].'"></td></tr>';
+									echo '<tr><td class="key">Email: </td><td class="value"><input type="email" name="email" title="Your email has to be 	on aiub.edu domain" pattern="^[a-zA-Z0-9]+@aiub\.edu$" value="'.$row['EMAIL'].'"></td></tr>';
 									echo '<tr><td></td><td class="submit-button"><input type="submit" name="submit" value="Save"></td></tr>';
 								}
 								else{
-									echo '<p>Data not found</p>';
+									echo '<p>User Data not found</p>';
 								}
 							}
 							?>
