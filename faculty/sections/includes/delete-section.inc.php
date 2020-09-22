@@ -126,3 +126,5 @@ else{
 }
 
 ?>
+
+<?php oci_close($conn);?>

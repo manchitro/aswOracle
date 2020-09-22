@@ -5,18 +5,18 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 		$attId = $_POST['attId'];
 		$attEntry = $_POST['attEntry'];
 
-		require '../../../includes/dbh.inc.php';
+		require '../../../includes/oracleConn.php';
 
-		$sql = "UPDATE attendances SET Entry = ? WHERE Id = ?";
-		$stmt = mysqli_stmt_init($conn);
-
-		if (!mysqli_stmt_prepare($stmt, $sql)) {
+		$sql = "UPDATE attendances SET Entry = :entry WHERE Id = :attid";
+		$stmt = oci_parse($conn, $sql);
+		if (!$stmt) {
 			echo "Attendance update failed: sqlerror";
 			exit();
 		}
 		else{
-			mysqli_stmt_bind_param($stmt, "ii", $attEntry, $attId);
-			mysqli_stmt_execute($stmt);
+			oci_bind_by_name($stmt, ':entry', $attEntry);
+			oci_bind_by_name($stmt, ':attid', $attId);
+			oci_execute($stmt);
 
 			echo "changed: ".$attId." to ".$attEntry;
 			exit();
@@ -29,3 +29,5 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 else{
 	echo "Attendance update failed: no session";
 }
+
+oci_close($conn);

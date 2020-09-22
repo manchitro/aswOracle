@@ -57,71 +57,64 @@ else{
 				<table class="student-table">
 					<?php
 					$index = 1;
-					require '../../includes/dbh.inc.php';
+					require '../../includes/oracleConn.php';
 
-					$sql2 = "SELECT * FROM classes where SectionId = ? ORDER BY classDate;";
-					$stmt2 = mysqli_stmt_init($conn);
-					if (!mysqli_stmt_prepare($stmt2, $sql2)) {
+					$sql2 = "SELECT * FROM classes where SectionId = :sid ORDER BY classDate";
+					$stmt2 = oci_parse($conn, $sql2);
+					if (!$stmt2) {
 						echo '<p class="error-msg">Error retrieving data</p>';
 					}
 					else{
-						mysqli_stmt_bind_param($stmt2, "s", $sectionId);
-						mysqli_stmt_execute($stmt2);
-						mysqli_stmt_store_result($stmt2);
-						mysqli_stmt_bind_result($stmt2, $class_id, $class_sectionId, $class_date, $class_type, $class_startTimeId, $class_endTimeId, $class_roomNo, $class_QRCode, $class_QRCodeDisplayStartTIme, $class_QRCodeDisplayEndTIme, $class_createdAt);
-
+						oci_bind_by_name($stmt2, ':sid', $sectionId);
+						oci_execute($stmt2);
+						
 						echo '<tr>';
 						echo '<th>#</th><th>ID</th><th>Name</th>';
-						while (mysqli_stmt_fetch($stmt2)) {
-							$formattedDate = date("M d", strtotime($class_date));
+						while (($row = oci_fetch_array($stmt2, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
+							$formattedDate = date("M d", strtotime($row['CLASSDATE']));
 							echo '<th>'.$formattedDate.'</th>';
 						}
 						echo '</tr>';
 					}
 
-					$sql = "SELECT * FROM users where Id in (SELECT studentId from sectionstudents where sectionId = ?);";
-					$stmt = mysqli_stmt_init($conn);
-					if (!mysqli_stmt_prepare($stmt, $sql)) {
+					$sql = "SELECT * FROM users where Id in (SELECT studentId from sectionstudents where sectionId = :sid)";
+					$stmt = oci_parse($conn, $sql);
+					if (!$stmt) {
 						echo '<p class="error-msg">Error retrieving data</p>';
 					}
 					else{
-						mysqli_stmt_bind_param($stmt, "s", $sectionId);
-						mysqli_stmt_execute($stmt);
-						mysqli_stmt_store_result($stmt);
-						mysqli_stmt_bind_result($stmt, $stu_id, $stu_academicId, $stu_firstname, $stu_lastname, $stu_email, $stu_pass, $stu_userType, $stu_createdAt);
-						while(mysqli_stmt_fetch($stmt)){
+						oci_bind_by_name($stmt, ':sid', $sectionId);
+						oci_execute($stmt);
+						while (($row = oci_fetch_array($stmt, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
 							echo '<tr>';
-							echo '<td>'.$index.'</td>'.'<td>'.$stu_academicId.'</td>'.'<td>'.$stu_firstname.' '.$stu_lastname.'</td>';
+							echo '<td>'.$index.'</td>'.'<td>'.$row['ACADEMICID'].'</td>'.'<td>'.$row['FIRSTNAME'].' '.$row['LASTNAME'].'</td>';
 						//for each student
 						//echo $stu_id.' '.$stu_academicId.' '.$stu_firstname.' '.$stu_lastname.' '.$stu_email.' '.$stu_pass.' '.$stu_userType.' '.$stu_createdAt.'<br>';
 
-							$sql2 = "SELECT * FROM classes where SectionId = ?;";
-							$stmt2 = mysqli_stmt_init($conn);
-							if (!mysqli_stmt_prepare($stmt2, $sql2)) {
+							$sql2 = "SELECT * FROM classes where SectionId = :sid";
+							$stmt2 = oci_parse($conn, $sql2);
+							if (!$stmt2) {
 								echo '<p class="error-msg">Error retrieving data</p>';
 							}
 							else{
-								mysqli_stmt_bind_param($stmt2, "s", $sectionId);
-								mysqli_stmt_execute($stmt2);
-								mysqli_stmt_store_result($stmt2);
-								mysqli_stmt_bind_result($stmt2, $class_id, $class_sectionId, $class_date, $class_type, $class_startTimeId, $class_endTimeId, $class_roomNo, $class_QRCode, $class_QRCodeDisplayStartTIme, $class_QRCodeDisplayEndTIme, $class_createdAt);
-								while(mysqli_stmt_fetch($stmt2)){
+								oci_bind_by_name($stmt2, ':sid', $sectionId);
+								oci_execute($stmt2);
+								while (($row2 = oci_fetch_array($stmt2, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
 								//for each class
 								//echo $class_id.' '.$class_sectionId.' '.$class_date.' '.$class_type.' '.$class_startTimeId.' '.$class_endTimeId.' '.$class_roomNo.' '.$class_QRCode.' '.$class_QRCodeDisplayStartTIme.' '.$class_QRCodeDisplayEndTIme.' '.$class_createdAt.'<br>';
 
-									$sql3 = "SELECT * FROM attendances where ClassId = ? AND StudentId = ? ORDER BY StudentId;";
-									$stmt3 = mysqli_stmt_init($conn);
-									if (!mysqli_stmt_prepare($stmt3, $sql3)) {
+									$sql3 = "SELECT * FROM attendances where ClassId = :cid AND StudentId = :stuid ORDER BY StudentId";
+									$stmt3 = oci_parse($conn, $sql3);
+									if (!$stmt3) {
 										echo '<p class="error-msg">Error retrieving data</p>';
 									}
 									else{
-										mysqli_stmt_bind_param($stmt3, "ss", $class_id, $stu_id);
-										mysqli_stmt_execute($stmt3);
-										mysqli_stmt_store_result($stmt3);
-										mysqli_stmt_bind_result($stmt3, $att_id, $att_studentId, $att_classId, $att_entry, $att_scanTime, $att_createdAt);
-										while(mysqli_stmt_fetch($stmt3)){
+										oci_bind_by_name($stmt3, ':cid', $row2['ID']);
+										oci_bind_by_name($stmt3, ':stuid', $row['ID']);
+										oci_execute($stmt3);
+										while (($row3 = oci_fetch_array($stmt3, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
 										//echo $att_id.' '.$att_studentId.' '.$att_classId.' '.$att_entry.' '.$att_scanTime.' '.$att_createdAt.'<br>';
-											echo '<td contenteditable class="att" id="'.$att_id.'">'.$att_entry.'</td>';
+											echo '<td contenteditable class="att" id="'.$row3['ID'].'">'.$row3['ENTRY'].'</td>';
 										}
 									}
 								}
@@ -138,3 +131,5 @@ else{
 		</div>
 	</body>
 	</html>
+
+	<?php oci_close($conn);?>

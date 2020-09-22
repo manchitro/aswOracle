@@ -10,77 +10,77 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 			$firstName = $_POST['student-first-name'];
 			$lastName = $_POST['student-last-name'];
 
-			require '../../../includes/dbh.inc.php';
+			require '../../../includes/oracleConn.php';
 
-			$sql = "SELECT * FROM users where academicId = ?";
-			$stmt = mysqli_stmt_init($conn);
-
-			if (!mysqli_stmt_prepare($stmt, $sql)) {
+			$sql = "SELECT * FROM users where academicId = :aid";
+			$stmt = oci_parse($conn, $sql);
+			if (!$stmt) {
 				$_SESSION['sectionId'] = $sectionId;
 				$_SESSION['sectionName'] = $sectionName;
 				header("Location: ../addstudent.php?error=sqlerror");
 				exit();
 			}
 			else{
-				mysqli_stmt_bind_param($stmt, "s", $academicId);
-				mysqli_stmt_execute($stmt);
-				mysqli_stmt_store_result($stmt);
-				mysqli_stmt_bind_result($stmt, $stu_id, $stu_academicId, $stu_firstname, $stu_lastname, $stu_email, $stu_pass, $stu_userType, $stu_createdAt);
-				if(mysqli_stmt_num_rows($stmt) > 0){
+				oci_bind_by_name($stmt, ':aid', $academicId);
+				oci_execute($stmt);
+				$nrows = oci_fetch_all($stmt, $result, null, null, OCI_FETCHSTATEMENT_BY_ROW);
+				if($nrows > 0){
 					//if already exists
-					if (mysqli_stmt_fetch($stmt)) {
-						$foundId = $stu_id;
+					oci_execute($stmt);
+					if (($row = oci_fetch_array($stmt, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
+						$foundId = $row['ID'];
 
-						$sql1 = "SELECT * FROM SectionStudents WHERE SectionId = ? AND StudentId = ?";
-						$stmt1 = mysqli_stmt_init($conn);
+						$sql1 = "SELECT * FROM SectionStudents WHERE SectionId = :sid AND StudentId = :stuid";
+						$stmt1 = oci_parse($conn, $sql1);
 
-						if (!mysqli_stmt_prepare($stmt1, $sql1)) {
+						if (!$stmt1) {
 							$_SESSION['sectionId'] = $sectionId;
 							$_SESSION['sectionName'] = $sectionName;
 							header("Location: ../addstudent.php?error=sqlerror".mysqli_error($conn));
 							exit();
 						}
 						else{
-							mysqli_stmt_bind_param($stmt1, "ss", $sectionId, $foundId);
-							mysqli_stmt_execute($stmt1);
-							mysqli_stmt_store_result($stmt1);
-							if(mysqli_stmt_num_rows($stmt1) == 0){
-								$sql2 = "INSERT INTO sectionstudents (SectionId, StudentId) VALUES (?, ?);";
-								$stmt2 = mysqli_stmt_init($conn);
+							oci_bind_by_name($stmt1, ':sid', $sectionId);
+							oci_bind_by_name($stmt1, ':stuid', $foundId);
+							oci_execute($stmt1);
+							$nrows = oci_fetch_all($stmt1, $result, null, null, OCI_FETCHSTATEMENT_BY_ROW);
+							if($nrows == 0){
+								$sql2 = "INSERT INTO sectionstudents (SectionId, StudentId) VALUES (:sid, :stuid)";
+								$stmt2 = oci_parse($conn, $sql2);
 
-								if (!mysqli_stmt_prepare($stmt2, $sql2)) {
+								if (!$stmt2) {
 									$_SESSION['sectionId'] = $sectionId;
 									$_SESSION['sectionName'] = $sectionName;
 									header("Location: ../addstudent.php?error=sqlerror");
 									exit();
 								}
 								else{
-									mysqli_stmt_bind_param($stmt, "ss", $sectionId, $foundId);
-									mysqli_stmt_execute($stmt);
+									oci_bind_by_name($stmt2, ':aid', $academicId);
+									oci_bind_by_name($stmt2, ':stuid', $foundId);
+									oci_execute($stmt2);
 
-									$sql3 = "SELECT * FROM classes where sectionId = ?;";
-									$stmt3 = mysqli_stmt_init($conn);
-									if (!mysqli_stmt_prepare($stmt3, $sql3)) {
+									$sql3 = "SELECT * FROM classes where sectionId = :sid";
+									$stmt3 = oci_parse($conn, $sql3);
+									if (!$stmt3) {
 										echo '<p class="error-msg">Error retrieving data</p>';
 									}
 									else{
-										mysqli_stmt_bind_param($stmt3, "s", $sectionId);
-										mysqli_stmt_execute($stmt3);
-										mysqli_stmt_store_result($stmt3);
-										mysqli_stmt_bind_result($stmt3, $classId, $classSectionId, $classDate, $classType, $classStartTimeId, $classEndTimeId, $classRoomNo, $classQRCode, $classQRDisplayStartTime, $classQRDisplayEndTime, $classCreatedAt);
-										while (mysqli_stmt_fetch($stmt3)){
-											$sql4 = "INSERT INTO attendances (StudentId, ClassId, CreatedAt) VALUES (?, ?, current_timestamp());";
-											$stmt4 = mysqli_stmt_init($conn);
-											if (!mysqli_stmt_prepare($stmt4, $sql4)) {
+										oci_bind_by_name($stmt3, ':sid', $sectionId);
+										oci_execute($stmt3);
+										while (($row = oci_fetch_array($stmt3, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
+											$sql4 = "INSERT INTO attendances (StudentId, ClassId, CreatedAt) VALUES (:stuid, :cid, current_timestamp(2))";
+											$stmt4 = oci_parse($conn, $sql4);
+											if (!$stmt4) {
 												$_SESSION['sectionId'] = $sectionId;
 												$_SESSION['sectionName'] = $sectionName;
 												header("Location: ../createclass.php?error=sqlerror");
 												exit();
 											}
 											else{
-										//$entry = "0";
-												mysqli_stmt_bind_param($stmt4, "ss", $foundId, $classId);
-												mysqli_stmt_execute($stmt4);
+												//$entry = "0";
+												oci_bind_by_name($stmt4, ':stuid', $foundId);
+												oci_bind_by_name($stmt4, ':cid', $row['ID']);
+												oci_execute($stmt4);
 											}
 										}
 										$_SESSION['sectionId'] = $sectionId;
@@ -97,8 +97,6 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 								exit();
 							}
 						}
-
-						
 					}
 					else{
 						$_SESSION['sectionId'] = $sectionId;
@@ -108,10 +106,10 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 					}
 				}else{
 					//if not already exists
-					$sql = "INSERT INTO users (AcademicId, FirstName, LastName, Email, Password, UserType, CreatedAt) VALUES (?, ?, ?, NULL, NULL, '1', current_timestamp());";
-					$stmt = mysqli_stmt_init($conn);
-
-					if (!mysqli_stmt_prepare($stmt, $sql)) {
+					$sql = "INSERT INTO users (AcademicId, FirstName, LastName, Email, Password, UserType, CreatedAt) VALUES (:aid, :fname, :lname, NULL, NULL, '1', current_timestamp(2))
+					RETURNING Id INTO :p_val";
+					$stmt = oci_parse($conn, $sql);
+					if (!$stmt) {
 						$_SESSION['sectionId'] = $sectionId;
 						$_SESSION['sectionName'] = $sectionName;
 						header("Location: ../addstudent.php?error=sqlerror");
@@ -120,38 +118,38 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 					else{
 						$firstName = strtoupper($firstName);
 						$lastName = strtoupper($lastName);
-						mysqli_stmt_bind_param($stmt, "sss", $academicId, $firstName, $lastName);
-						mysqli_stmt_execute($stmt);
-						$lastInsertId = $stmt->insert_id;
-						echo $academicId." inserted id: ".$lastInsertId;
+						oci_bind_by_name($stmt, ':aid', $academicId);
+						oci_bind_by_name($stmt, ':fname', $firstName);
+						oci_bind_by_name($stmt, ':lname', $lastName);
+						oci_bind_by_name($stmt, ":p_val", $lastId);
+						oci_execute($stmt);
+						echo $academicId." inserted id: ".$lastId;
 
-						$sql2 = "INSERT INTO sectionstudents (SectionId, StudentId) VALUES (?, ?);";
-						$stmt2 = $stmt = mysqli_stmt_init($conn);
-
-						if (!mysqli_stmt_prepare($stmt2, $sql2)) {
+						$sql2 = "INSERT INTO sectionstudents (SectionId, StudentId) VALUES (:sid, :stuid)";
+						$stmt2 = oci_parse($conn, $sql2);
+						if (!$stmt2) {
 							$_SESSION['sectionId'] = $sectionId;
 							$_SESSION['sectionName'] = $sectionName;
 							header("Location: ../addstudent.php?error=sqlerror");
 							exit();
 						}
 						else{
-							mysqli_stmt_bind_param($stmt2, "ss", $sectionId, $lastInsertId);
-							mysqli_stmt_execute($stmt2);
+							oci_bind_by_name($stmt2, ':sid', $sectionId);
+							oci_bind_by_name($stmt2, ':stuid', $lastId);
+							oci_execute($stmt2);
 							
-							$sql3 = "SELECT * FROM classes where sectionId = ?;";
-							$stmt3 = mysqli_stmt_init($conn);
-							if (!mysqli_stmt_prepare($stmt3, $sql3)) {
+							$sql3 = "SELECT * FROM classes where sectionId = :sid";
+							$stmt3 = oci_parse($conn, $sql3);
+							if (!$stmt3) {
 								echo '<p class="error-msg">Error retrieving data</p>';
 							}
 							else{
-								mysqli_stmt_bind_param($stmt3, "s", $sectionId);
-								mysqli_stmt_execute($stmt3);
-								mysqli_stmt_store_result($stmt3);
-								mysqli_stmt_bind_result($stmt3, $classId, $classSectionId, $classDate, $classType, $classStartTimeId, $classEndTimeId, $classRoomNo, $classQRCode, $classQRDisplayStartTime, $classQRDisplayEndTime, $classCreatedAt);
-								while (mysqli_stmt_fetch($stmt3)){
-									$sql4 = "INSERT INTO attendances (StudentId, ClassId, CreatedAt) VALUES (?, ?, current_timestamp());";
-									$stmt4 = mysqli_stmt_init($conn);
-									if (!mysqli_stmt_prepare($stmt4, $sql4)) {
+								oci_bind_by_name($stmt3, ':sid', $sectionId);
+								oci_execute($stmt3);
+								while (($row = oci_fetch_array($stmt3, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
+									$sql4 = "INSERT INTO attendances (StudentId, ClassId, CreatedAt) VALUES (:stuid, :cid, current_timestamp(2))";
+									$stmt4 = oci_parse($conn, $sql4);
+									if (!$stmt4) {
 										$_SESSION['sectionId'] = $sectionId;
 										$_SESSION['sectionName'] = $sectionName;
 										header("Location: ../addstudent.php?error=sqlerror");
@@ -159,8 +157,9 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 									}
 									else{
 										//$entry = "0";
-										mysqli_stmt_bind_param($stmt4, "ss", $lastInsertId, $classId);
-										mysqli_stmt_execute($stmt4);
+										oci_bind_by_name($stmt4, ':stuid', $lastId);
+										oci_bind_by_name($stmt4, ':cid', $row['ID']);
+										oci_execute($stmt4);
 									}
 								}
 								$_SESSION['sectionId'] = $sectionId;
@@ -191,3 +190,5 @@ else{
 	header("Location: ../../../login.php?error=nosession");
 	exit();
 }
+
+oci_close($conn);

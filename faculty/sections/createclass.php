@@ -195,3 +195,5 @@ else{
 		</div>
 	</body>
 	</html>
+
+	<?php oci_close($conn);?>

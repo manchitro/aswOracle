@@ -53,18 +53,17 @@ $_SESSION['sectionName'] = $sectionName;
 			</div>
 			<div class="main-container-table">
 				<?php
-				require '../../includes/dbh.inc.php';
-				$sql = "SELECT * FROM users where Id in (SELECT studentId from sectionstudents where sectionId = ?);";
-				$stmt = mysqli_stmt_init($conn);
-				if (!mysqli_stmt_prepare($stmt, $sql)) {
+				require '../../includes/oracleConn.php';
+				$sql = "SELECT * FROM users where Id in (SELECT studentId from sectionstudents where sectionId = :sid)";
+				$stmt = oci_parse($conn, $sql);
+				if (!$stmt) {
 					echo '<p class="error-msg">Error retrieving your data</p>';
 				}
 				else{
-					mysqli_stmt_bind_param($stmt, "s", $sectionId);
-					mysqli_stmt_execute($stmt);
-					mysqli_stmt_store_result($stmt);
-					mysqli_stmt_bind_result($stmt, $stu_id, $stu_academicId, $stu_firstname, $stu_lastname, $stu_email, $stu_pass, $stu_userType, $stu_createdAt);
-					if(mysqli_stmt_num_rows($stmt) == 0){
+					oci_bind_by_name($stmt, ':sid', $sectionId);
+					oci_execute($stmt);
+					$nrows = oci_fetch_all($stmt, $result, null, null, OCI_FETCHSTATEMENT_BY_ROW);
+					if($nrows == 0){
 						echo "<p>There are no students in this section.";
 					}
 					else{
@@ -77,12 +76,13 @@ $_SESSION['sectionName'] = $sectionName;
 						echo '<th><input type="checkbox" onClick="toggle(this)"></th>';
 						echo '</tr>';
 						$index = 1;
-						while (mysqli_stmt_fetch($stmt)){
+						oci_execute($stmt);
+						while (($row = oci_fetch_array($stmt, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
 							echo '<tr>';
 							echo '<td>'.$index.'</td>';
-							echo '<td>'.$stu_academicId.'</td>';
-							echo '<td>'.$stu_firstname." ".$stu_lastname.'</td>';
-							echo '<td><input type="checkbox" name="foo[]" value="'.$stu_id.'"></td>';
+							echo '<td>'.$row['ACADEMICID'].'</td>';
+							echo '<td>'.$row['FIRSTNAME']." ".$row['LASTNAME'].'</td>';
+							echo '<td><input type="checkbox" name="foo[]" value="'.$row['ID'].'"></td>';
 							echo '</tr>';
 							$index++;
 						}
@@ -99,3 +99,5 @@ $_SESSION['sectionName'] = $sectionName;
 		</div>
 	</body>
 	</html>
+
+	<?php oci_close($conn);?>

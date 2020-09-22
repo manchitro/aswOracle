@@ -173,3 +173,5 @@ else{
 	header("Location: ../../../login.php?error=nosession");
 	exit();
 }
+
+oci_close($conn);

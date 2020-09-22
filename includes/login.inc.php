@@ -161,3 +161,5 @@ else{
 	header("Location: ../login.php?error=directaccess");
 	exit();
 }
+
+oci_close($conn);

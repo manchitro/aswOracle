@@ -2,35 +2,32 @@
 session_start();
 if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 	if(isset($_POST['classId'])){
-		require '../../includes/dbh.inc.php';
+		require '../../includes/oracleConn.php';
 
-		$sql = "SELECT * FROM classes WHERE Id = ?;";
-		$stmt = mysqli_stmt_init($conn);
-		if (!mysqli_stmt_prepare($stmt, $sql)) {
+		$sql = "SELECT * FROM classes WHERE Id = :cid";
+		$stmt = oci_parse($conn, $sql);
+		if (!$stmt) {
 			echo '<p class="error-msg">Error retrieving data</p>';
 		}
 		else{
-			mysqli_stmt_bind_param($stmt, "s", $_POST['classId']);
-			mysqli_stmt_execute($stmt);
-			mysqli_stmt_store_result($stmt);
-			mysqli_stmt_bind_result($stmt, $classId, $classSectionId, $classDate, $classType, $classStartTimeId, $classEndTimeId, $classRoomNo, $classQRCode, $classQRDisplayStartTime, $classQRDisplayEndTime, $classCreatedAt);
-
-			if (mysqli_stmt_fetch($stmt)) {
-				if(empty($classQRDisplayStartTime) == 1){
-					$sql2 = "UPDATE classes SET QRDisplayStartTime = current_timestamp() WHERE Id = ?;";
-					$stmt2 = mysqli_stmt_init($conn);
-					if (!mysqli_stmt_prepare($stmt2, $sql2)) {
+			oci_bind_by_name($stmt, ':cid', $_POST['classId']);
+			oci_execute($stmt);
+			if (($row = oci_fetch_array($stmt, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
+				if(empty($row['QRCODEDISPLAYSTARTTIME']) == 1){
+					$sql2 = "UPDATE classes SET QRCodeDisplayStartTime = current_timestamp(2) WHERE Id = :cid";
+					$stmt2 = oci_parse($conn, $sql2);
+					if (!$stmt2) {
 						echo '<p class="error-msg">Error retrieving data</p>';
 					}
 					else{
-						mysqli_stmt_bind_param($stmt2, "s", $classId);
-						mysqli_stmt_execute($stmt2);
+						oci_bind_by_name($stmt2, ':cid', $_POST['classId']);
+						oci_execute($stmt2);
 
-						//echo date("Y-m-d H:i:s");
+						echo "updated".date("Y-m-d H:i:s");
 					}
 				}
 				else{
-					//echo $classQRDisplayStartTime;
+					echo "not updated: ".$row['QRCODEDISPLAYSTARTTIME'];
 				}
 			}
 			else{
@@ -45,3 +42,5 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 else{
 	echo "Get QR failed: no session";
 }
+
+oci_close($conn);

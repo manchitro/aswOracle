@@ -9,33 +9,32 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 				$idList = $_POST['foo'];
 				$sectionId = $_POST['sectionId'];
 				
-				require '../../../includes/dbh.inc.php';
+				require '../../../includes/oracleConn.php';
 
-				$sql0 = "SELECT * FROM classes where sectionId = ?";
-				$stmt0 = mysqli_stmt_init($conn);
-				if (!mysqli_stmt_prepare($stmt0, $sql0)) {
+				$sql0 = "SELECT * FROM classes where sectionId = :sid";
+				$stmt0 = oci_parse($conn, $sql0);
+				if (!$stmt0) {
 					echo '<p class="error-msg">Error retrieving data</p>';
 				}
 				else{
-					mysqli_stmt_bind_param($stmt0, "s", $sectionId);
-					mysqli_stmt_execute($stmt0);
-					mysqli_stmt_store_result($stmt0);
-					mysqli_stmt_bind_result($stmt0, $classId, $classSectionId, $classDate, $classType, $classStartTimeId, $classEndTimeId, $classRoomNo, $classQRCode, $classQRDisplayStartTime, $classQRDisplayEndTime, $classCreatedAt);
-					if(mysqli_stmt_num_rows($stmt0) == 0){
+					oci_bind_by_name($stmt0, ':sid', $sectionId);
+					oci_execute($stmt0);
+					$nrows = oci_fetch_all($stmt0, $result, null, null, OCI_FETCHSTATEMENT_BY_ROW);
+					if($nrows == 0){
 						echo "<p>No classes found. Add a class using the button above.</p>";
 					}
 					else{
-						while (mysqli_stmt_fetch($stmt0)) {
-							$sql1 ='DELETE FROM attendances WHERE classId = ? AND StudentId in ('.implode(",", $idList).');';
-							$stmt1 = mysqli_stmt_init($conn);
-
-							if (!mysqli_stmt_prepare($stmt1, $sql1)) {
+						oci_execute($stmt0);
+						while (($row = oci_fetch_array($stmt0, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
+							$sql1 ='DELETE FROM attendances WHERE classId = :cid AND StudentId in ('.implode(",", $idList).')';
+							$stmt1 = oci_parse($conn, $sql1);
+							if (!$stmt1) {
 								header("Location: ../removestudents.php?error=sqlerror");
 								exit();
 							}
 							else{
-								mysqli_stmt_bind_param($stmt1, "ss", $classId);
-								mysqli_stmt_execute($stmt1);
+								oci_bind_by_name($stmt1, ':cid', $classId);
+								oci_execute($stmt1);
 
 								header("Location: ../removestudents.php?success=removedstudents");
 							}
@@ -44,16 +43,15 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 					}
 				}
 
-				$sql ='DELETE FROM sectionstudents WHERE SectionId = ? AND StudentId in ('.implode(",", $idList).');';
-				$stmt = mysqli_stmt_init($conn);
-
-				if (!mysqli_stmt_prepare($stmt, $sql)) {
+				$sql ='DELETE FROM sectionstudents WHERE SectionId = :sid AND StudentId in ('.implode(",", $idList).')';
+				$stmt = oci_parse($conn, $sql);
+				if (!$stmt) {
 					header("Location: ../removestudents.php?error=sqlerror");
 					exit();
 				}
 				else{
-					mysqli_stmt_bind_param($stmt, "s", $sectionId);
-					mysqli_stmt_execute($stmt);
+					oci_bind_by_name($stmt, ':sid', $sectionId);
+					oci_execute($stmt);
 
 					header("Location: ../removestudents.php?success=removedstudents");
 				}
@@ -82,3 +80,5 @@ else{
 	header("Location: ../../../login.php?error=nosession");
 	exit();
 }
+
+oci_close($conn);
