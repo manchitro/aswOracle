@@ -14,33 +14,33 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 		exit();
 	}
 
-	require '../../includes/dbh.inc.php';
+	require '../../includes/oracleConn.php';
 
 	$sectionId = $_POST['sectionId'];
 	$sectionName = $_POST['sectionName'];
 
-	$sql2 = "SELECT * FROM sectionTimes WHERE sectionId = ?;";
-	$stmt2 = mysqli_stmt_init($conn);
-	if(!mysqli_stmt_prepare($stmt2, $sql2)){
+	$sql = "SELECT * FROM sectionTimes WHERE sectionId = :sid";
+	$stmt = oci_parse($conn, $sql);
+	if (!$stmt) {
 		echo '<p class="error-msg">Error retrieving your data. Please go back and try again!</p>';
 	}
 	else{
-		mysqli_stmt_bind_param($stmt2, "s", $sectionId);
-		mysqli_stmt_execute($stmt2);
-		mysqli_stmt_store_result($stmt2);
-		mysqli_stmt_bind_result($stmt2, $sectionTimeId, $startTimeId, $endTimeId, $weekDayId, $classType, $room, $sectionId, $createdAt);
-		if(mysqli_stmt_num_rows($stmt2) == 0){
+		oci_bind_by_name($stmt, ':sid', $sectionId);
+		oci_execute($stmt);
+		$nrows = oci_fetch_all($stmt, $result, null, null, OCI_FETCHSTATEMENT_BY_ROW);
+		if($nrows == 0){
 			echo "<p>Error: No section time found</p>";
 		}
 		else{
-				//record section time 1
-			if(mysqli_stmt_fetch($stmt2)){
-				$time1id = $sectionTimeId;
-				$st1 = $startTimeId;
-				$et1 = $endTimeId;
-				$wt1 = $weekDayId;
-				$ct1 = $classType;
-				$room1 = $room;
+			oci_execute($stmt);
+			//record section time 1
+			if (($row = oci_fetch_array($stmt, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
+				$time1id = $row['ID'];
+				$st1 = $row['STARTTIMEID'];
+				$et1 = $row['ENDTIMEID'];
+				$wt1 = $row['WEEKDAYID'];
+				$ct1 = $row['CLASSTYPE'];
+				$room1 = $row['ROOMNO'];
 			}
 			else{
 				$time1id = -1;
@@ -51,14 +51,14 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 				$room1 = "";
 			}
 
-				//record section time 2
-			if(mysqli_stmt_fetch($stmt2)){
-				$time2id = $sectionTimeId;
-				$st2 = $startTimeId;
-				$et2 = $endTimeId;
-				$wt2 = $weekDayId;
-				$ct2 = $classType;
-				$room2 = $room;
+			//record section time 2
+			if (($row = oci_fetch_array($stmt, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
+				$time2id = $row['ID'];
+				$st2 = $row['STARTTIMEID'];
+				$et2 = $row['ENDTIMEID'];
+				$wt2 = $row['WEEKDAYID'];
+				$ct2 = $row['CLASSTYPE'];
+				$room2 = $row['ROOMNO'];
 
 				$oneClass = false;
 			}
@@ -74,8 +74,6 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 			}
 		}
 	}
-	mysqli_stmt_close($stmt2);
-	mysqli_close($conn);
 }
 else{
 	header("Location: ../../login.php?error=nosession");

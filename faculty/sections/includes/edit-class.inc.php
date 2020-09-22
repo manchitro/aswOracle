@@ -16,12 +16,11 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 			if($et >= $st + 2){
 				if ($et <= $st + 6) {
 					echo implode(",", $_POST).PHP_EOL;
-					require '../../../includes/dbh.inc.php';
+					require '../../../includes/oracleConn.php';
 
-					$sql = "UPDATE classes SET ClassDate = ?, ClassType = ?, StartTimeId = ?, EndTimeId = ?, RoomNo = ? WHERE Id = ?";
-					$stmt = mysqli_stmt_init($conn);
-
-					if (!mysqli_stmt_prepare($stmt, $sql)) {
+					$sql = "UPDATE classes SET ClassDate = :cd, ClassType = :ct, StartTimeId = :stid, EndTimeId = :etid, RoomNo = :room WHERE Id = :cid";
+					$stmt = oci_parse($conn, $sql);
+					if (!$stmt) {
 						$_SESSION['sectionId'] = $sectionId;
 						$_SESSION['sectionName'] = $sectionName;
 						$_SESSION['classId'] = $classId;
@@ -29,8 +28,13 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 						exit();
 					}
 					else{
-						mysqli_stmt_bind_param($stmt, "ssssss", $classDate, $ct, $st, $et, $room, $classId);
-						mysqli_stmt_execute($stmt);
+						oci_bind_by_name($stmt, ':cd', $classDate);
+						oci_bind_by_name($stmt, ':ct', $ct);
+						oci_bind_by_name($stmt, ':stid', $st);
+						oci_bind_by_name($stmt, ':etid', $et);
+						oci_bind_by_name($stmt, ':room', $room);
+						oci_bind_by_name($stmt, ':cid', $classId);
+						oci_execute($stmt);
 						
 						header("Location: ../classes.php?success=classedited");
 						exit();

@@ -13,7 +13,7 @@
 		echo '<p class="error-msg">Error retrieving data</p>';
 	}
 	else{
-		$today = date("d-m-Y");
+		$today = date("Y-m-d");
 		oci_bind_by_name($stmt, ':fid', $_SESSION['userId']);
 		oci_bind_by_name($stmt, ':classDate', $today);
 		oci_execute($stmt);

@@ -33,33 +33,39 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 					//echo $startTime1." to ".$endTime1.PHP_EOL;
 					//echo "Room: ".$room1.PHP_EOL.PHP_EOL;
 
-					require '../../../includes/dbh.inc.php';
+					require '../../../includes/oracleConn.php';
 
-					$sql = "UPDATE sections SET SectionName = ? WHERE Id = ?;";
-					$stmt = mysqli_stmt_init($conn);
+					$sql = "UPDATE sections SET SectionName = :sectionName WHERE Id = :sid";
+					$stmt = oci_parse($conn, $sql);
 
-					if (!mysqli_stmt_prepare($stmt, $sql)) {
+					if (!$stmt) {
 						$_SESSION['sectionId'] = $sectionId;
 						$_SESSION['sectionName'] = $sectionName;
 						header("Location: ../editsection.php?error=sqlerror1");
 						exit();
 					}
 					else{
-						mysqli_stmt_bind_param($stmt, "ss", $sectionName, $sectionId);
-						mysqli_stmt_execute($stmt);
+						oci_bind_by_name($stmt, ':sectionName', $sectionName);
+						oci_bind_by_name($stmt, ':sid', $sectionId);
+						oci_execute($stmt);
 
-						$sql = "UPDATE SectionTimes SET StartTimeId = ?, EndTimeId = ?, WeekDayId = ?, ClassType = ?, RoomNo = ? WHERE Id = ?;";
-						$stmt = mysqli_stmt_init($conn);
+						$sql = "UPDATE SectionTimes SET StartTimeId = :stid, EndTimeId = :etid, WeekDayId = :wdid, ClassType = :ct, RoomNo = :room WHERE Id = :sectionTimeId";
+						$stmt = oci_parse($conn, $sql);
 
-						if(!mysqli_stmt_prepare($stmt, $sql)){
+						if (!$stmt) {
 							$_SESSION['sectionId'] = $sectionId;
 							$_SESSION['sectionName'] = $sectionName;
 							header("Location: ../editsection.php?error=sqlerror2");
 							exit();
 						}
 						else{
-							mysqli_stmt_bind_param($stmt, "ssssss", $startTime1, $endTime1, $weekDay1, $classType1, $room1, $time1id);
-							mysqli_stmt_execute($stmt);
+							oci_bind_by_name($stmt, ':stid', $startTime1);
+							oci_bind_by_name($stmt, ':etid',$endTime1);
+							oci_bind_by_name($stmt, ':wdid', $weekDay1);
+							oci_bind_by_name($stmt, ':ct', $classType1);
+							oci_bind_by_name($stmt, ':room', $room1);
+							oci_bind_by_name($stmt, ':sectionTimeId', $time1id);
+							oci_execute($stmt);
 						}
 					}
 
@@ -97,18 +103,23 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 								//echo $startTime2." to ".$endTime2.PHP_EOL;
 								//echo "Room: ".$room2.PHP_EOL.PHP_EOL;
 
-								$sql = "UPDATE SectionTimes SET StartTimeId = ?, EndTimeId = ?, WeekDayId = ?, ClassType = ?, RoomNo = ? WHERE Id = ?;";
-								$stmt = mysqli_stmt_init($conn);
+								$sql = "UPDATE SectionTimes SET StartTimeId = :stid, EndTimeId = :etid, WeekDayId = :wdid, ClassType = :ct, RoomNo = :room WHERE Id = :sectionTimeId";
+								$stmt = oci_parse($conn, $sql);
 
-								if(!mysqli_stmt_prepare($stmt, $sql)){
+								if (!$stmt) {
 									$_SESSION['sectionId'] = $sectionId;
 									$_SESSION['sectionName'] = $sectionName;
 									header("Location: ../editsection.php?error=sqlerror3");
 									exit();
 								}
 								else{
-									mysqli_stmt_bind_param($stmt, "ssssss", $startTime2, $endTime2, $weekDay2, $classType2, $room2, $time2id);
-									mysqli_stmt_execute($stmt);
+									oci_bind_by_name($stmt, ':stid', $startTime2);
+									oci_bind_by_name($stmt, ':etid',$endTime2);
+									oci_bind_by_name($stmt, ':wdid', $weekDay2);
+									oci_bind_by_name($stmt, ':ct', $classType2);
+									oci_bind_by_name($stmt, ':room', $room2);
+									oci_bind_by_name($stmt, ':sectionTimeId', $time2id);
+									oci_execute($stmt);
 								}
 							}
 							else{
@@ -146,9 +157,6 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 				exit();
 			}
 		}
-
-		mysqli_stmt_close($stmt);
-		mysqli_close($conn);
 
 		//redirect to sections after creation
 		header("Location: ../sections.php?secedited=".$sectionName);

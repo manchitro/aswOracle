@@ -15,12 +15,13 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 			if($et >= $st + 2){
 				if ($et <= $st + 6) {
 					echo implode(",", $_POST).PHP_EOL;
-					require '../../../includes/dbh.inc.php';
+					require '../../../includes/oracleConn.php';
 
-					$sql = "INSERT INTO classes (SectionId, ClassDate, ClassType, StartTimeId, EndTimeId, RoomNo, CreatedAt) VALUES (?, ?, ?, ?, ?, ?, current_timestamp());";
-					$stmt = mysqli_stmt_init($conn);
+					$sql = "INSERT INTO classes (SectionId, ClassDate, ClassType, StartTimeId, EndTimeId, RoomNo, CreatedAt) VALUES (:sid, :classDate, :ct, :stid, :etid, :room, current_timestamp(2))
+					RETURNING Id INTO :p_val";
+					$stmt = oci_parse($conn, $sql);
 
-					if (!mysqli_stmt_prepare($stmt, $sql)) {
+					if (!$stmt) {
 						$_SESSION['sectionId'] = $sectionId;
 						$_SESSION['sectionName'] = $sectionName;
 						header("Location: ../createclass.php?error=sqlerror");
@@ -28,30 +29,30 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 					}
 					else{
 						echo "prepared, inserting".PHP_EOL;
-						mysqli_stmt_bind_param($stmt, "ssssss", $sectionId, $classDate, $ct, $st, $et, $room);
-						mysqli_stmt_execute($stmt);
-						echo mysqli_stmt_error($stmt).PHP_EOL;
-						$lastInsertId = $stmt->insert_id;
-						//echo $academicId." inserted id: ".$lastInsertId;
+						oci_bind_by_name($stmt, ':sid', $sectionId);
+						oci_bind_by_name($stmt, ':classdate', $classDate);
+						oci_bind_by_name($stmt, ':ct', $ct);
+						oci_bind_by_name($stmt, ':stid', $st);
+						oci_bind_by_name($stmt, ':etid', $et);
+						oci_bind_by_name($stmt, ':room', $room);
+						oci_bind_by_name($stmt, ":p_val", $lastId);
+						oci_execute($stmt);
 
-						$sql2 = "SELECT * FROM users where Id in (SELECT studentId from sectionstudents where sectionId = ?);";
-						$stmt2 = mysqli_stmt_init($conn);
-						if (!mysqli_stmt_prepare($stmt2, $sql2)) {
+						$sql2 = "SELECT * FROM users where Id in (SELECT studentId from sectionstudents where sectionId = :sid)";
+						$stmt2 = oci_parse($conn, $sql2);
+						if (!$stmt2) {
 							$_SESSION['sectionId'] = $sectionId;
 							$_SESSION['sectionName'] = $sectionName;
 							header("Location: ../createclass.php?error=sqlerror");
 							exit();
 						}
 						else{
-							mysqli_stmt_bind_param($stmt2, "s", $sectionId);
-							mysqli_stmt_execute($stmt2);
-							mysqli_stmt_store_result($stmt2);
-							mysqli_stmt_bind_result($stmt2, $stu_id, $stu_academicId, $stu_firstname, $stu_lastname, $stu_email, $stu_pass, $stu_userType, $stu_createdAt);
-
-							while (mysqli_stmt_fetch($stmt2)){
-								$sql3 = "INSERT INTO attendances (StudentId, ClassId, CreatedAt) VALUES (?, ?, current_timestamp());";
-								$stmt3 = mysqli_stmt_init($conn);
-								if (!mysqli_stmt_prepare($stmt3, $sql3)) {
+							oci_bind_by_name($stmt2, ':sid', $sectionId);
+							oci_execute($stmt2);
+							while (($row = oci_fetch_array($stmt2, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
+								$sql3 = "INSERT INTO attendances (StudentId, ClassId, CreatedAt) VALUES (:stuid, :cid, current_timestamp(2))";
+								$stmt3 = oci_parse($conn, $sql3);
+								if (!$stmt3) {
 									$_SESSION['sectionId'] = $sectionId;
 									$_SESSION['sectionName'] = $sectionName;
 									header("Location: ../createclass.php?error=sqlerror");
@@ -59,10 +60,10 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 								}
 								else{
 									//$entry = "0";
-									mysqli_stmt_bind_param($stmt3, "ss", $stu_id, $lastInsertId);
-									mysqli_stmt_execute($stmt3);
+									oci_bind_by_name($stmt3, ':stuid', $stu_id);
+									oci_bind_by_name($stmt3, ':cid', $lastId);
+									oci_execute($stmt3);
 								}
-								echo mysqli_stmt_error($stmt).mysqli_stmt_error($stmt2).mysqli_stmt_error($stmt3);
 							}
 							$_SESSION['sectionId'] = $sectionId;
 							$_SESSION['sectionName'] = $sectionName;

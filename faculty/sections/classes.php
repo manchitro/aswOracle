@@ -52,38 +52,38 @@ include '../values.php';
 			</div>
 			<div class="main-container">
 				<?php
-				require '../../includes/dbh.inc.php';
-				$sql = "SELECT * FROM classes where sectionId = ? ORDER BY ClassDate;";
-				$stmt = mysqli_stmt_init($conn);
-				if (!mysqli_stmt_prepare($stmt, $sql)) {
+				require '../../includes/oracleConn.php';
+				$sql = "SELECT * FROM classes where sectionId = :sid ORDER BY ClassDate";
+				$stmt = oci_parse($conn, $sql);
+				if (!$stmt) {
 					echo '<p class="error-msg">Error retrieving data</p>';
 				}
 				else{
-					mysqli_stmt_bind_param($stmt, "s", $sectionId);
-					mysqli_stmt_execute($stmt);
-					mysqli_stmt_store_result($stmt);
-					mysqli_stmt_bind_result($stmt, $classId, $classSectionId, $classDate, $classType, $classStartTimeId, $classEndTimeId, $classRoomNo, $classQRCode, $classQRDisplayStartTime, $classQRDisplayEndTime, $classCreatedAt);
-					if(mysqli_stmt_num_rows($stmt) == 0){
+					oci_bind_by_name($stmt, ':sid', $sectionId);
+					oci_execute($stmt);
+					$nrows = oci_fetch_all($stmt, $result, null, null, OCI_FETCHSTATEMENT_BY_ROW);
+					if($nrows == 0){
 						echo "<p>No classes found. Add a class using the button above.</p>";
 					}
 					else{
-						while (mysqli_stmt_fetch($stmt)) {
+						oci_execute($stmt);
+						while (($row = oci_fetch_array($stmt, OCI_ASSOC+OCI_RETURN_NULLS)) != false) {
 							echo '<div class="class-box">';
-								echo '<p class="class-name">'.$sectionName.' - '.$classtype[$classType].'</p>';
+								echo '<p class="class-name">'.$sectionName.' - '.$classtype[$row['CLASSTYPE']].'</p>';
 								echo '<div class="class-times">';
-									echo '<p class="class-time">'.'on '.date("M d", strtotime($classDate)).'</p>';
-									echo '<p class="class-time">from '.$classtime[$classStartTimeId].' to '.$classtime[$classEndTimeId].' at '.$classRoomNo.'</p>';
+									echo '<p class="class-time">'.'on '.date("M d", strtotime($row['CLASSDATE'])).'</p>';
+									echo '<p class="class-time">from '.$classtime[$row['STARTTIMEID']].' to '.$classtime[$row['ENDTIMEID']].' at '.$row['ROOMNO'].'</p>';
 									echo '<div class="class-menu">';
 									echo '<form method="post" action="classattendance.php">';
 										echo '<input type="hidden" name="sectionId" value="'.$sectionId.'" />';
 										echo '<input type="hidden" name="sectionName" value="'.$sectionName.'" />';
-										echo '<input type="hidden" name="classId" value="'.$classId.'" />';
+										echo '<input type="hidden" name="classId" value="'.$row['ID'].'" />';
 										echo '<input type="submit" class="students" value="Attendances">';
 									echo '</form>';
 									echo '<form method="post" action="editclass.php">';
 										echo '<input type="hidden" name="sectionId" value="'.$sectionId.'" />';
 										echo '<input type="hidden" name="sectionName" value="'.$sectionName.'" />';
-										echo '<input type="hidden" name="classId" value="'.$classId.'" />';
+										echo '<input type="hidden" name="classId" value="'.$row['ID'].'" />';
 										echo '<input type="submit" class="classes" value="Edit">';
 									echo '</form>';
 								echo '</div>';

@@ -16,37 +16,37 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 		exit();
 	}
 
-	require '../../includes/dbh.inc.php';
+	require '../../includes/oracleConn.php';
 
 	$sectionId = $_POST['sectionId'];
 	$sectionName = $_POST['sectionName'];
 
-	$sql2 = "SELECT * FROM classes WHERE Id = ?;";
-	$stmt2 = mysqli_stmt_init($conn);
-	if(!mysqli_stmt_prepare($stmt2, $sql2)){
+	$sql = "SELECT * FROM classes WHERE Id = :cid";
+	$stmt = oci_parse($conn, $sql);
+	if (!$stmt) {
 		echo '<p class="error-msg">Error retrieving your data. Please go back and try again!</p>';
 	}
 	else{
-		mysqli_stmt_bind_param($stmt2, "s", $classId);
-		mysqli_stmt_execute($stmt2);
-		mysqli_stmt_store_result($stmt2);
-		mysqli_stmt_bind_result($stmt2, $classId, $classSectionId, $classDate, $classType, $classStartTimeId, $classEndTimeId, $classRoomNo, $classQRCode, $classQRDisplayStartTime, $classQRDisplayEndTime, $classCreatedAt);
-		if(mysqli_stmt_num_rows($stmt2) == 0){
+		oci_bind_by_name($stmt, ':cid', $classId);
+		oci_execute($stmt);
+		$nrows = oci_fetch_all($stmt, $result, null, null, OCI_FETCHSTATEMENT_BY_ROW);
+		if($nrows == 0){
 			echo "<p>Error: Class not found</p>";
 		}
 		else{
-			if(mysqli_stmt_fetch($stmt2)){
-				$cId = $classId;
-				$cSecId = $classSectionId;
-				$cDate = $classDate;
-				$ct1 = $classType;
-				$st1 = $classStartTimeId;
-				$et1 = $classEndTimeId;
-				$room1 = $classRoomNo;
-				$cQR = $classQRCode;
-				$cQRStart = $classQRDisplayStartTime;
-				$cQREnd = $classQRDisplayEndTime;
-				$cCreated = $classCreatedAt;
+			oci_execute($stmt);
+			if(($row = oci_fetch_array($stmt, OCI_ASSOC+OCI_RETURN_NULLS)) != false){
+				$cId = $row['ID'];
+				$cSecId = $row['SECTIONID'];
+				$cDate = $row['CLASSDATE'];
+				$ct1 = $row['CLASSTYPE'];
+				$st1 = $row['STARTTIMEID'];
+				$et1 = $row['ENDTIMEID'];
+				$room1 = $row['ROOMNO'];
+				$cQR = $row['QRCODE'];
+				$cQRStart = $row['QRCODEDISPLAYSTARTTIME'];
+				$cQREnd = $row['QRCODEDISPLAYENDTIME'];
+				$cCreated = $row['CREATEDAT'];
 			}
 			else{
 				header("Location: sections.php");
@@ -54,8 +54,6 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 			}
 		}
 	}
-	mysqli_stmt_close($stmt2);
-	mysqli_close($conn);
 }
 else{
 	header("Location: ../../login.php?error=nosession");
@@ -78,7 +76,7 @@ else{
 		<?php include '../navigation.php'?>
 		<div class="right-panel">
 			<div class="page-title">
-				<a href="students.php"><button class="back-button"><img src="../../images/back.png"></button></a>
+				<a href="classes.php"><button class="back-button"><img src="../../images/back.png"></button></a>
 				<p>Edit class of <?php echo $_POST['sectionName']?></p>
 			</div>
 			<div class="main-container">

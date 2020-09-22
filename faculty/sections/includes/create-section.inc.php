@@ -11,13 +11,13 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 		$endTime1 = $_POST['end-time-1'];
 		$classType1 = $_POST['class-type-1'];
 		$room1 = $_POST['room-1'];
-
+		
 		$weekDay2 = $_POST['weekday-2'];
 		$startTime2 = $_POST['start-time-2'];
 		$endTime2 = $_POST['end-time-2'];
 		$classType2 = $_POST['class-type-2'];
 		$room2 = $_POST['room-2'];
-
+		
 		//validate section time 1
 		if ($startTime1 < $endTime1) {
 			if($endTime1 >= $startTime1 + 2){
@@ -29,37 +29,49 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 								if ($endTime2 <= $startTime2 + 6) {
 									if ($weekDay1 !== $weekDay2) {
 										if(!empty($room2) && $room2 !== ""){
-											require '../../../includes/dbh.inc.php';
-
-											$sql = "INSERT INTO sections (SectionName, FacultyId, CreatedAt) VALUES (?, ?, current_timestamp());";
-											$stmt = mysqli_stmt_init($conn);
-
-											if (!mysqli_stmt_prepare($stmt, $sql)) {
+											require '../../../includes/oracleConn.php';
+											
+											$sql = "INSERT INTO sections (SectionName, FacultyId, CreatedAt) VALUES (:sectionName, :fid, current_timestamp(2))
+											RETURNING Id INTO :p_val";
+											$stmt = oci_parse($conn, $sql);
+											
+											if (!$stmt) {
 												header("Location: ../addsection.php?error=sqlerrorhere");
 												exit();
 											}
 											else{
-												mysqli_stmt_bind_param($stmt, "ss", $sectionName, $_SESSION['userId']);
-												mysqli_stmt_execute($stmt);
-												$lastInsertId = $stmt->insert_id;
-
-												$sql = "INSERT INTO sectiontimes (StartTimeId, EndTimeId, WeekDayId, ClassType, RoomNo, SectionId, CreatedAt) VALUES (?, ?, ?, ?, ?, ?, current_timestamp());";
-												$stmt = mysqli_stmt_init($conn);
-
-												if(!mysqli_stmt_prepare($stmt, $sql)){
+												$lastId="";
+												oci_bind_by_name($stmt, ':fid', $_SESSION['userId']);
+												oci_bind_by_name($stmt, ':sectionName', $sectionName);
+												oci_bind_by_name($stmt, ":p_val", $lastId);
+												oci_execute($stmt);
+												
+												$sql = "INSERT INTO sectiontimes (StartTimeId, EndTimeId, WeekDayId, ClassType, RoomNo, SectionId, CreatedAt) VALUES (:stid, :etid, :wdid, :ct, :room, :sid, current_timestamp(2))";
+												$stmt = oci_parse($conn, $sql);
+												
+												if (!$stmt) {
 													header("Location: ../addsection.php?error=sqlerror");
 													exit();
 												}
 												else{
-													mysqli_stmt_bind_param($stmt, "ssssss", $startTime1, $endTime1, $weekDay1, $classType1, $room1, $lastInsertId);
-													mysqli_stmt_execute($stmt);
-
-													mysqli_stmt_bind_param($stmt, "ssssss", $startTime2, $endTime2, $weekDay2, $classType2, $room2, $lastInsertId);
-													mysqli_stmt_execute($stmt);
-
-													mysqli_stmt_close($stmt);
-													mysqli_close($conn);
-
+													//section time 1
+													oci_bind_by_name($stmt, ':stid', $startTime1);
+													oci_bind_by_name($stmt, ':etid',$endTime1);
+													oci_bind_by_name($stmt, ':wdid', $weekDay1);
+													oci_bind_by_name($stmt, ':ct', $classType1);
+													oci_bind_by_name($stmt, ':room', $room1);
+													oci_bind_by_name($stmt, ':sid', $lastId);
+													oci_execute($stmt);
+													
+													//section time 2
+													oci_bind_by_name($stmt, ':stid', $startTime2);
+													oci_bind_by_name($stmt, ':etid',$endTime2);
+													oci_bind_by_name($stmt, ':wdid', $weekDay2);
+													oci_bind_by_name($stmt, ':ct', $classType2);
+													oci_bind_by_name($stmt, ':room', $room2);
+													oci_bind_by_name($stmt, ':sid', $lastId);
+													oci_execute($stmt);
+													
 													//redirect to sections after creation
 													header("Location: ../sections.php?seccreated=".$sectionName);
 													exit();
@@ -93,33 +105,39 @@ if (isset($_SESSION['userId']) && $_SESSION['userId']!== "") {
 					}
 					else{
 						//one class is set
-						require '../../../includes/dbh.inc.php';
-
-						$sql = "INSERT INTO sections (SectionName, FacultyId, CreatedAt) VALUES (?, ?, current_timestamp());";
-						$stmt = mysqli_stmt_init($conn);
-
-						if (!mysqli_stmt_prepare($stmt, $sql)) {
+						require '../../../includes/oracleConn.php';
+						
+						$sql = "INSERT INTO sections (SectionName, FacultyId, CreatedAt) VALUES (:sectionName, :fid, current_timestamp(2))
+						RETURNING Id INTO :p_val";
+						$stmt = oci_parse($conn, $sql);
+						
+						if (!$stmt) {
 							header("Location: ../addsection.php?error=sqlerrorhere");
 							exit();
 						}
 						else{
-							mysqli_stmt_bind_param($stmt, "ss", $sectionName, $_SESSION['userId']);
-							mysqli_stmt_execute($stmt);
-							$lastInsertId = $stmt->insert_id;
-
-							$sql = "INSERT INTO sectiontimes (StartTimeId, EndTimeId, WeekDayId, ClassType, RoomNo, SectionId, CreatedAt) VALUES (?, ?, ?, ?, ?, ?, current_timestamp());";
-							$stmt = mysqli_stmt_init($conn);
-
-							if(!mysqli_stmt_prepare($stmt, $sql)){
+							$lastId="";
+							oci_bind_by_name($stmt, ':fid', $_SESSION['userId']);
+							oci_bind_by_name($stmt, ':sectionName', $sectionName);
+							oci_bind_by_name($stmt, ":p_val", $lastId);
+							oci_execute($stmt);
+							
+							$sql = "INSERT INTO sectiontimes (StartTimeId, EndTimeId, WeekDayId, ClassType, RoomNo, SectionId, CreatedAt) VALUES (:stid, :etid, :wdid, :ct, :room, :sid, current_timestamp(2))";
+							$stmt = oci_parse($conn, $sql);
+							
+							if (!$stmt) {
 								header("Location: ../addsection.php?error=sqlerror");
 								exit();
 							}
 							else{
-								mysqli_stmt_bind_param($stmt, "ssssss", $startTime1, $endTime1, $weekDay1, $classType1, $room1, $lastInsertId);
-								mysqli_stmt_execute($stmt);
-
-								mysqli_stmt_close($stmt);
-								mysqli_close($conn);
+								//section time 1
+								oci_bind_by_name($stmt, ':stid', $startTime1);
+								oci_bind_by_name($stmt, ':etid',$endTime1);
+								oci_bind_by_name($stmt, ':wdid', $weekDay1);
+								oci_bind_by_name($stmt, ':ct', $classType1);
+								oci_bind_by_name($stmt, ':room', $room1);
+								oci_bind_by_name($stmt, ':sid', $lastId);
+								oci_execute($stmt);
 
 								//redirect to sections after creation
 								header("Location: ../sections.php?seccreated=".$sectionName);
